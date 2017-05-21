@@ -38,9 +38,6 @@ public class Application {
         //提醒频率
         int alertFreq = Integer.parseInt(redisService.hGet(SmsRedisKey.ALERT_FREQUENCY.getName(), alertType));
 
-        //提醒次数对应的时间（与第一次提醒间隔的时长，单位：分钟）
-        int diffMinute = 1;
-
         boolean needSend = false;
 
         if(alertCount>1){
