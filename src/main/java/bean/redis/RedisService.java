@@ -57,12 +57,7 @@ public class RedisService<K,V> {
         return result;
     }
 
-    /**
-     * 设置key
-     */
-    public Boolean set(final String key, final String value) {
-    	return this.set(0, key, value);
-    }
+
 
     public boolean addString(final String key,final String value,final Long timeout){
         boolean result = redisTemplate.execute(new RedisCallback<Boolean>() {
@@ -77,6 +72,26 @@ public class RedisService<K,V> {
         });
         return result;
     }
+
+    /**
+     * 设置key
+     */
+    public Boolean set(final String key, final String value) {
+        if (redisTemplate != null) {
+            return redisTemplate.execute(new RedisCallback<Boolean>() {
+                public Boolean doInRedis(RedisConnection connection)
+                        throws DataAccessException {
+                    RedisSerializer<String> serializer = getRedisSerializer();
+                    byte[] keys = serializer.serialize(key);
+                    byte[] values = serializer.serialize(value);
+                    connection.set(keys, values);
+                    return true;
+                }
+            });
+        }
+        return false;
+    }
+
     /**
      * 设置key
      */
@@ -100,7 +115,22 @@ public class RedisService<K,V> {
      * 根据key获取对象
      */
     public String get(final String key) {
-    	return this.get(0, key);
+        if (redisTemplate != null) {
+            return redisTemplate.execute(new RedisCallback<String>() {
+                public String doInRedis(RedisConnection connection)
+                        throws DataAccessException {
+                    RedisSerializer<String> serializer = getRedisSerializer();
+                    byte[] keys = serializer.serialize(key);
+                    byte[] values = connection.get(keys);
+                    if (values == null) {
+                        return null;
+                    }
+                    String value = serializer.deserialize(values);
+                    return value;
+                }
+            });
+        }
+        return null;
     }
 
     /**
@@ -247,7 +277,6 @@ public class RedisService<K,V> {
     /**
      * 查询剩余时间
      * @param key
-     * @param value
      * @return
      */
     public Long ttl(final String key) {
@@ -604,18 +633,17 @@ public class RedisService<K,V> {
         }
 
         public Long incr(final String key) {
-//            if (redisTemplate != null) {
-//                return redisTemplate.execute(new RedisCallback<Long>() {
-//                    public Long doInRedis(RedisConnection connection)
-//                            throws DataAccessException {
-//                        RedisSerializer<String> serializer = getRedisSerializer();
-//                        byte[] keys = serializer.serialize(key);
-//                        return connection.incr(keys);
-//                    }
-//                });
-//            }
-//            return null;
-        	return this.incr(0, key);
+            if (redisTemplate != null) {
+                return redisTemplate.execute(new RedisCallback<Long>() {
+                    public Long doInRedis(RedisConnection connection)
+                            throws DataAccessException {
+                        RedisSerializer<String> serializer = getRedisSerializer();
+                        byte[] keys = serializer.serialize(key);
+                        return connection.incr(keys);
+                    }
+                });
+            }
+            return null;
         }
 
         public Long incr(final int dbIndex, final String key) {
