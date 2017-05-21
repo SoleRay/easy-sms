@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.soleray</groupId>
-    <artifactId>easy-sms</artifactId>
+    <artifactId>system-monitor-sms</artifactId>
     <version>1.0.0</version>
 
     <build>
